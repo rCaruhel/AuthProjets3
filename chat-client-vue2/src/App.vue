@@ -2,6 +2,7 @@
   <div class="chat-container">
     <div class="header">
       <button v-if="!this.userName" @click="loginWithGoogle" class="login-button">Se connecter avec Google</button>
+      <button v-if="!this.userName" @click="loginWithDiscord" class="login-button">Se connecter avec Discord</button>
       <button v-if="this.userName" @click="logoutFromGoogle" class="login-button">Sé déconnecter</button>
       <p v-if="this.userName"><strong>Connecté en tant que : {{ this.userName }}</strong></p>
     </div>
@@ -47,12 +48,16 @@ export default {
     await this.fetchUser();
   },
   methods: {
-    ...mapActions(['loginUser', 'logoutUser', 'setProfile']),
+    ...mapActions(['loginUserDiscord','loginUserGoogle', 'logoutUser', 'setProfile']),
     async fetchUser() {
       console.log("user dans le store : ", this.userName)
     },
+    loginWithDiscord() {
+      this.loginUserDiscord()
+      this.socket.emit('registerUser', this.userName);
+    },
     loginWithGoogle() {
-      this.loginUser()
+      this.loginUserGoogle()
       this.socket.emit('registerUser', this.userName);
     },
     logoutFromGoogle() {

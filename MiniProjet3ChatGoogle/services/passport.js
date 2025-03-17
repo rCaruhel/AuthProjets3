@@ -1,13 +1,14 @@
 require('dotenv').config();
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const DiscordStrategy = require('passport-discord').Strategy;
 const keys = require('../config/keys');
 const mongoose = require('mongoose');
 
 // Assure-toi que le modèle est bien enregistré avant de l'utiliser
 require('../models/User');
+const {configDotenv} = require("dotenv");
 const User = mongoose.model('users');
-
 
 
 
@@ -27,7 +28,40 @@ passport.deserializeUser((id, done) => {
     });
 });
 
-// services/passport.js
+
+
+let scopes = ['identify', 'email', 'guilds', 'guilds.join'];
+
+passport.use(new DiscordStrategy({
+            clientID: process.env.DISCORD_CLIENT_ID,
+            clientSecret: process.env.DISCORD_CLIENT_SECRET,
+            callbackURL: process.env.DISCORD_CALLBACK_URL,
+            scope: scopes
+        },
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                //console.log('Google profile:', profile);
+                const existingUser = await User.findOne(
+                    { googleId: profile.id });
+                if (existingUser) {
+
+                    //console.log('Existing user:', existingUser);
+                    return done(null, existingUser);
+                }
+                console.log(profile)
+                const user = await new User({
+                     googleId: profile.id,
+                     displayName: profile.username
+                 }).save();
+                done(null, user);
+            } catch (err) {
+                console.error('Error in GoogleStrategy:', err);
+                done(err, null);
+            }
+        }
+)
+);
+
 
 passport.use(new GoogleStrategy({
         clientID: keys.googleClientID,
@@ -38,7 +72,8 @@ passport.use(new GoogleStrategy({
     async (accessToken, refreshToken, profile, done) => {
         try {
             //console.log('Google profile:', profile);
-            const existingUser = await User.findOne({ googleId: profile.id });
+            const existingUser = await User.findOne(
+                { googleId: profile.id });
             if (existingUser) {
 
                 //console.log('Existing user:', existingUser);

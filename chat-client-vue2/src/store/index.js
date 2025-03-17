@@ -27,8 +27,11 @@ export default new Vuex.Store({
       commit('setUserName', user.displayName);
       commit('setUserId', user._id);
     },
-    async loginUser() {
+    async loginUserGoogle() {
       window.location.href = "http://localhost:3000/auth/google";
+    },
+    async loginUserDiscord() {
+      window.location.href = "http://localhost:3000/auth/discord";
     },
     async logoutUser() {
       window.location.href = "http://localhost:3000/auth/logout";

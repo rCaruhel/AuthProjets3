@@ -5,6 +5,16 @@ const passport = require('passport');
 module.exports = app => {
 
 
+    app.get('/auth/discord', passport.authenticate('discord'));
+
+
+    app.get('/auth/discord/callback', passport.authenticate('discord', {
+        failureRedirect: '/auth/discord/failure'
+    }), function(req, res) {
+        res.redirect('http://localhost:8080') // Successful auth
+    });
+
+
     app.get('/auth/google',
         passport.authenticate('google', {
             scope: ['profile', 'email']  // Le scope inclut 'profile' et 'email'

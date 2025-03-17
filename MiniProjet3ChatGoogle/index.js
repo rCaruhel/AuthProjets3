@@ -60,6 +60,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+
+
+
 redisClient.on('connect', () => {
     console.log('✅ Connecté à Redis');
 });
