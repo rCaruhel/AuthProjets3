@@ -7,7 +7,6 @@ const mongoose = require('mongoose');
 
 // Assure-toi que le modèle est bien enregistré avant de l'utiliser
 require('../models/User');
-const {configDotenv} = require("dotenv");
 const User = mongoose.model('users');
 
 
@@ -30,7 +29,7 @@ passport.deserializeUser((id, done) => {
 
 
 
-let scopes = ['identify', 'email', 'guilds', 'guilds.join'];
+let scopes = ['identify'];
 
 passport.use(new DiscordStrategy({
             clientID: process.env.DISCORD_CLIENT_ID,
