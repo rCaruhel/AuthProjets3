@@ -48,14 +48,14 @@ passport.use(new DiscordStrategy({
                     //console.log('Existing user:', existingUser);
                     return done(null, existingUser);
                 }
-                console.log(profile)
+                //console.log(profile)
                 const user = await new User({
                      googleId: profile.id,
                      displayName: profile.username
                  }).save();
                 done(null, user);
             } catch (err) {
-                console.error('Error in GoogleStrategy:', err);
+                console.error('Error in DiscordStrategy:', err);
                 done(err, null);
             }
         }
