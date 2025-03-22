@@ -1,12 +1,14 @@
 const passport = require('passport');
-
+const { register, login } = require('../controllers/authController');
 // Routes d'authentification
 
 module.exports = app => {
 
 
-    app.get('/auth/discord', passport.authenticate('discord'));
+    app.post('/api/register', register);
+    app.post('/api/login', login);
 
+    app.get('/auth/discord', passport.authenticate('discord'));
 
     app.get('/auth/discord/callback', passport.authenticate('discord', {
         failureRedirect: '/auth/discord/failure'
@@ -25,7 +27,6 @@ module.exports = app => {
     app.get('/auth/google/callback',
         passport.authenticate('google', { failureRedirect: '/auth/google/failure' }),
         (req, res) => {
-            //console.log("Nouvel utilisateur connecté : ", req.user); // Vérifie que l'utilisateur est bien dans req.user
             res.redirect('http://localhost:8080');
         }
     );
@@ -34,7 +35,7 @@ module.exports = app => {
     app.get('/auth/logout', (req, res, next) => {
         req.logout((err) => {
             if (err) {
-                return next(err); // Si une erreur se produit, elle est envoyée au middleware d'erreur
+                return next(err);
             }
             req.session.destroy(() => {
                 res.redirect('http://localhost:8080');
@@ -48,9 +49,6 @@ module.exports = app => {
 
 
     app.get('/api/current_user', (req, res) => {
-        //console.log('current_user');
-        //console.log('req.session:', req.session);  // Vérifie le contenu de la session
-        //console.log('req.user:', req.user);  // Vérifie si l'utilisateur est bien attaché
         res.send(req.user);
     });
 }

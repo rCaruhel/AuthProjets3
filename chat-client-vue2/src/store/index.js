@@ -23,7 +23,6 @@ export default new Vuex.Store({
   actions: {
     async setProfile({commit}){
       const user = await getCurrentUser();
-      //console.log('user:', user);
       commit('setUserName', user.displayName);
       commit('setUserId', user._id);
     },
@@ -39,7 +38,4 @@ export default new Vuex.Store({
   },
   modules: {
   },
-  created() {
-
-  }
 })

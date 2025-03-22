@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
+const { Schema } = mongoose;
 
 const userSchema = new Schema({
-
-    googleId: String,
-    displayName: String,
-
+    googleId: { type: String },
+    displayName: { type: String, unique: true }, // Unique pour éviter les doublons
+    encryptedPassword: { type: String }
 });
 
-mongoose.model('users', userSchema);
+const User = mongoose.model('users', userSchema);
+module.exports = User;
