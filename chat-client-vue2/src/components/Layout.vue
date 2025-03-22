@@ -2,6 +2,7 @@
   <div>
     <!-- Barre de navigation (toujours affichée) -->
     <div class="header">
+      <h2>Bourdin Lukas, Caruhel Rémy S4B2 | Mini Proj 3</h2>
       <button v-if="!userName" @click="loginWithGoogle" class="login-button">Se connecter avec Google</button>
       <button v-if="!userName" @click="loginWithDiscord" class="login-button">Se connecter avec Discord</button>
       <button v-if="userName" @click="logout" class="login-button">Se déconnecter</button>
@@ -12,7 +13,7 @@
       <p v-if="userName"><strong>Connecté en tant que : {{ userName }}</strong></p>
     </div>
 
-    <!-- Affichage de la page actuelle -->
+
     <router-view></router-view>
   </div>
 </template>

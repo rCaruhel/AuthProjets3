@@ -1,5 +1,4 @@
 const bcrypt = require('bcrypt');
-const SECRET_KEY = process.env.SECRET_KEY || "supersecretkey";
 const User = require('../models/User');
 
 
@@ -7,18 +6,14 @@ exports.register = async (req, res) => {
     try {
         const { displayName, password } = req.body;
 
-        //console.log("user : ", displayName, "pass : ", password);
-
         // Vérifie si l'utilisateur existe déjà
         const existingUser = await User.findOne({ displayName });
-        //console.log(existingUser);
         if (existingUser) return res.status(400).json({ message: "L'utilisateur existe déjà" });
 
         // Hashage du mot de passe
         const hashedPassword = await bcrypt.hash(password, 10);
-        //console.log("Hashed pass : ", hashedPassword);
 
-        // Création de l'utilisateur avec le champ correct "encryptedPassword"
+
         const newUser = new User({ displayName, encryptedPassword: hashedPassword });
         await newUser.save();
 

@@ -81,11 +81,26 @@ const connectedUsers = new Set();
 io.on('connection', (socket) => {
     console.log('Nouvel utilisateur connecté');
 
-    // Écoute des messages envoyés par les clients
     socket.on('message', async (data) => {
-        const message = new Message({ sender: data.pseudo, text: data.text });
-        await message.save();
-        io.emit('message', message);
+        try {
+            const message = new Message({ sender: data.pseudo, text: data.text });
+            await message.save(); // Sauvegarde dans MongoDB
+
+            // Ajout du message dans Redis (Mise à jour du cache)
+            const cacheKey = 'messages';
+            const cachedMessages = await redisClient.get(cacheKey);
+            let messages = cachedMessages ? JSON.parse(cachedMessages) : [];
+
+            messages.unshift(message); // Ajoute le nouveau message au début de la liste
+
+            await redisClient.setEx(cacheKey, CACHE_EXPIRATION, JSON.stringify(messages));
+
+            console.log("🟢 Message ajouté dans MongoDB et Redis !");
+
+            io.emit('message', message); // Envoi du message aux clients connectés
+        } catch (error) {
+            console.error("❌ Erreur lors de l'envoi du message :", error);
+        }
     });
 
     // Enregistrement d'un nouvel utilisateur
@@ -93,7 +108,6 @@ io.on('connection', (socket) => {
         socket.userName = userName;
         connectedUsers.add(userName);
         io.emit('userList', Array.from(connectedUsers));
-
     });
 
     // Gestion de la déconnexion d'un utilisateur
@@ -109,8 +123,46 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
+const CACHE_EXPIRATION = 500;
+
+// Route pour récupérer les messages depuis Redis
+app.get('/messages/redis', async (req, res) => {
+    try {
+        const cacheKey = 'messages';
+        const cachedMessages = await redisClient.get(cacheKey);
+
+        if (cachedMessages) {
+            console.log("Données récupérées depuis Redis !");
+            return res.json(JSON.parse(cachedMessages));
+        }
+
+        console.log("Aucun message en cache Redis.");
+        res.status(404).json({ message: "Aucun message en cache" });
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération des messages Redis :', error);
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+});
+
+// Route pour récupérer les messages depuis MongoDB
+app.get('/messages/mongodb', async (req, res) => {
+    try {
+        const messages = await Message.find().sort({ createdAt: -1 });
+
+        // Mettre en cache pour optimiser la prochaine requête Redis
+        const cacheKey = 'messages';
+        await redisClient.setEx(cacheKey, CACHE_EXPIRATION, JSON.stringify(messages));
+
+        console.log("Données récupérées depuis MongoDB et mises en cache !");
+        res.json(messages);
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération des messages MongoDB :', error);
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+});
+
+
+app.use((err, req, res) => {
     console.error('Error:', err.stack);
     res.status(500).send('Something broke!');
 });
